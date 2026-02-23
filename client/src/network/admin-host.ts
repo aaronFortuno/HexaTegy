@@ -1,0 +1,180 @@
+/**
+ * AdminHost — lògica exclusiva del navegador administrador.
+ *
+ * Rep ordres dels jugadors, executa la lògica de joc i difon l'estat.
+ * És l'autoritat única de la partida.
+ */
+
+import type { RelayClient } from "./relay-client.js";
+import type { LocalRelay } from "./local-relay.js";
+
+type AnyRelay = RelayClient | LocalRelay;
+import { MsgType, GameConfig, GameStatePayload, GamePhase,
+         PlayerInfo, Region, MoveOrder, RoundResult, DEFAULT_CONFIG } from "./protocol.js";
+import { generateMap } from "../core/map.js";
+import { resolveRound } from "../core/combat.js";
+import { applyProduction } from "../core/production.js";
+import { checkVictory } from "../core/victory.js";
+
+export class AdminHost {
+  private relay: AnyRelay;
+  private players: Map<string, PlayerInfo> = new Map();
+  private regions: Region[] = [];
+  private config: GameConfig = { ...DEFAULT_CONFIG };
+  private round = 0;
+  private phase: GamePhase = "lobby";
+  private roundTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingOrders = new Map<string, MoveOrder[]>();
+
+  // Colors assignats als jugadors en ordre d'unió
+  private static PLAYER_COLORS = [
+    "#e05c5c", "#5c9ee0", "#5ce07a", "#e0c45c",
+    "#c45ce0", "#5ce0d4", "#e08c5c", "#a0e05c",
+  ];
+  private colorIndex = 0;
+
+  constructor(relay: AnyRelay) {
+    this.relay = relay;
+    this.setupListeners();
+  }
+
+  private setupListeners(): void {
+    // Nou jugador detectat pel relay
+    this.relay.on(MsgType.PLAYER_JOINED, (msg) => {
+      const { id, name } = msg.payload as { id: string; name: string };
+      if (this.players.has(id)) return;
+
+      const color = AdminHost.PLAYER_COLORS[this.colorIndex % AdminHost.PLAYER_COLORS.length];
+      this.colorIndex++;
+
+      const player: PlayerInfo = {
+        id, name, color,
+        isAdmin: false,
+        isReady: false,
+        isEliminated: false,
+      };
+      this.players.set(id, player);
+      this.broadcastState();
+    });
+
+    this.relay.on(MsgType.PLAYER_LEFT, (msg) => {
+      const { id } = msg.payload as { id: string };
+      this.players.delete(id);
+      this.broadcastState();
+    });
+
+    this.relay.on(MsgType.PLAYER_READY, (msg) => {
+      const player = this.players.get(msg.from ?? "");
+      if (player) { player.isReady = true; this.broadcastState(); }
+    });
+
+    this.relay.on(MsgType.PLAYER_ORDERS, (msg) => {
+      const { orders } = msg.payload as { orders: MoveOrder[] };
+      this.pendingOrders.set(msg.from ?? "", orders);
+    });
+  }
+
+  // ─── Control de partida ───────────────────────────────────────────────────
+
+  updateConfig(partial: Partial<GameConfig>): void {
+    this.config = { ...this.config, ...partial };
+  }
+
+  startGame(): void {
+    if (this.phase !== "lobby") return;
+
+    const playerIds = [...this.players.keys()];
+
+    // L'admin s'afegeix com a jugador
+    const adminPlayer: PlayerInfo = {
+      id: this.relay.clientId!,
+      name: "Admin",
+      color: AdminHost.PLAYER_COLORS[this.colorIndex % AdminHost.PLAYER_COLORS.length],
+      isAdmin: true,
+      isReady: true,
+      isEliminated: false,
+    };
+    this.players.set(adminPlayer.id, adminPlayer);
+    playerIds.unshift(adminPlayer.id);
+
+    this.regions = generateMap(playerIds, this.config);
+    this.startRound();
+  }
+
+  private startRound(): void {
+    this.round++;
+    this.phase = "planning";
+    this.pendingOrders.clear();
+
+    applyProduction(this.regions, this.config);
+    this.broadcastState();
+
+    this.relay.send(MsgType.ROUND_START, {
+      round: this.round,
+      duration: this.config.roundDuration,
+    });
+
+    this.roundTimer = setTimeout(() => this.resolveRound(), this.config.roundDuration * 1000);
+  }
+
+  private resolveRound(): void {
+    if (this.phase !== "planning") return;
+    this.phase = "resolving";
+
+    const allOrders = [...this.pendingOrders.entries()].flatMap(
+      ([playerId, orders]) => orders.map((o) => ({ ...o, playerId }))
+    );
+
+    const result: RoundResult = resolveRound(this.regions, allOrders, this.config);
+    result.round = this.round; // assignar número de ronda correcte
+
+    // Aplicar resultats al mapa
+    for (const delta of result.regionDeltas) {
+      const region = this.regions.find((r) => r.id === delta.regionId);
+      if (region) {
+        region.ownerId = delta.newOwnerId;
+        region.troops = delta.newTroops;
+      }
+    }
+
+    // Marcar eliminats
+    for (const playerId of result.eliminated) {
+      const p = this.players.get(playerId);
+      if (p) p.isEliminated = true;
+    }
+
+    this.relay.send(MsgType.ROUND_RESOLVE, result as unknown as Record<string, unknown>);
+
+    // Comprovar victòria
+    const winner = checkVictory(this.regions, [...this.players.values()], this.config, this.round);
+    if (winner) {
+      this.phase = "ended";
+      this.relay.send(MsgType.GAME_OVER, { winnerId: winner, round: this.round });
+      return;
+    }
+
+    // Pausa breu per animació i nova ronda
+    setTimeout(() => this.startRound(), 2500);
+  }
+
+  private broadcastState(): void {
+    const payload: GameStatePayload = {
+      players: [...this.players.values()],
+      regions: this.regions,
+      config: this.config,
+      round: this.round,
+      phase: this.phase,
+    };
+    this.relay.send(MsgType.GAME_STATE, payload as unknown);
+  }
+
+  /** Reenviar l'estat actual a tots els listeners (útil quan el GameClient admin
+   *  s'inicialitza DESPRÉS que AdminHost ja hagi difós el primer GAME_STATE). */
+  syncState(): void {
+    this.broadcastState();
+  }
+
+  destroy(): void {
+    if (this.roundTimer) clearTimeout(this.roundTimer);
+  }
+}

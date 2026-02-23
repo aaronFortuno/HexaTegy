@@ -1,0 +1,79 @@
+/**
+ * RelayClient — connexió WebSocket al servidor relay.
+ * Usada tant per l'admin com pels jugadors.
+ */
+
+import { MsgType, WsMessage } from "./protocol.js";
+
+type MessageHandler = (msg: WsMessage) => void;
+
+export class RelayClient {
+  private ws: WebSocket | null = null;
+  private handlers = new Map<string, Set<MessageHandler>>();
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly url: string;
+  clientId: string | null = null;
+  roomCode: string | null = null;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(this.url);
+
+      this.ws.onopen = () => resolve();
+
+      this.ws.onmessage = (event) => {
+        let msg: WsMessage;
+        try {
+          msg = JSON.parse(event.data as string) as WsMessage;
+        } catch {
+          return;
+        }
+        this.dispatch(msg);
+      };
+
+      this.ws.onerror = () => reject(new Error("No s'ha pogut connectar al relay"));
+
+      this.ws.onclose = () => {
+        this.dispatch({ type: MsgType.RELAY_ERROR, payload: { message: "Connexió tancada" } });
+      };
+    });
+  }
+
+  send(type: MsgType, payload: unknown = {}): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn("[relay-client] WebSocket no disponible");
+      return;
+    }
+    this.ws.send(JSON.stringify({ type, payload }));
+  }
+
+  on(type: MsgType | "*", handler: MessageHandler): () => void {
+    if (!this.handlers.has(type)) this.handlers.set(type, new Set());
+    this.handlers.get(type)!.add(handler);
+    return () => this.handlers.get(type)?.delete(handler);
+  }
+
+  private dispatch(msg: WsMessage): void {
+    this.handlers.get(msg.type)?.forEach((h) => h(msg));
+    this.handlers.get("*")?.forEach((h) => h(msg));
+  }
+
+  createRoom(): void {
+    this.send(MsgType.ROOM_CREATE);
+  }
+
+  joinRoom(roomCode: string, name: string): void {
+    this.send(MsgType.ROOM_JOIN, { roomCode, name });
+  }
+
+  disconnect(): void {
+    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+    this.ws?.close();
+    this.ws = null;
+  }
+}

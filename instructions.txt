@@ -1,0 +1,61 @@
+Quiero que actúes como arquitecto, desarrollador full‑stack y diseñador front‑end para crear un proyecto web que sea un juego multijugador en tiempo real con simultaneidad de turnos. El objetivo es diseñar y construir un juego ligero, completamente ejecutado en el navegador, usando WebSockets para comunicación en tiempo real, sin backend persistente ni base de datos. Solo el navegador del administrador coordina la sala y almacena temporalmente los datos mientras está abierta.
+
+OBJETIVO DEL JUEGO
+Construir un juego de estrategia tipo “conquista territorial”, con un mapa 2D formado por celdas hexagonales. El estilo general debe recordar a DiceWars, pero la dinámica es de turnos simultáneos en tiempo real:
+
+Cada ronda dura entre 5 y 30 segundos (configurable).
+Durante ese tiempo los jugadores planifican movimientos, ataques o inmovilizar tropas.
+Al finalizar el contador, se ejecutan todas las instrucciones simultáneamente con una animación breve.
+Se repite el ciclo hasta terminar por condición de victoria.
+MECÁNICAS PRINCIPALES
+Creación y unión a sala
+El administrador crea sala con código tipo XXX-XXX.
+Número ilimitado de jugadores.
+El administrador decide configuraciones previas.
+Cuando todos están listos, el administrador inicia la partida.
+Inicio de partida
+Los jugadores aparecen en regiones aleatorias o colindantes entre sí (configurable).
+Tropas y producción
+Cada región gana tropas automáticamente al inicio de cada ronda.
+La producción depende del número de regiones colindantes controladas (1–5, configurable).
+Regiones controladas durante X rondas pueden recibir tropas extra (todos los valores configurables).
+Movimientos y combates
+Clic principal en región origen + arrastre a región vecina = plan de movimiento/ataque.
+Se pueden generar varias flechas desde una misma región.
+Reparto automático igualitario de tropas, con posibilidad de ajustar manualmente cada flecha.
+Clic secundario elimina una planificación.
+Sistema de combate basado en ventajas defensivas: por ejemplo 45–55 para el defensor (configurable).
+Al ejecutar acciones, se muestra animación simple: flechas de colores, números que cambian, etc.
+Condiciones de victoria (todas configurables)
+Conquista total.
+Mayor puntuación tras X rondas.
+Controlar cierto % del mapa.
+Control continuo de región clave (“rey de la colina”).
+Modos acumulativos: primera persona en alcanzar X puntos o ganar Y partidas.
+Sala temporal
+Todo se guarda solo mientras el navegador administrador está abierto.
+Puede haber varias partidas dentro de la misma sala.
+Ranking temporal persistente mientras la sala siga viva.
+REQUISITOS TÉCNICOS
+Arquitectura basada en WebSockets.
+Sin backend persistente: todo en cliente, sincronizado a través del administrador.
+Mapas hexagonales en 2D, gráficos simples pero cuidados y fáciles de renderizar.
+Animaciones mínimas pero claras.
+Modo claro/oscuro.
+i18n: Català (por defecto), Castellano, English.
+Código modular, escalable y fácil de entender.
+LO QUE NECESITO DE TI
+Como Claude Code 4.6 quiero que:
+
+Propongas la mejor arquitectura y estructura de carpetas.
+Generes de forma incremental el código del proyecto completo (front-end, lógica de juego, motor de simulación, sincronización por WebSockets, render de hexágonos, UI/UX, i18n...).
+Hagas sugerencias técnicas cuando exista más de una forma de implementarlo.
+Mantengas todo el trabajo con un estilo de código limpio, claro y mantenible.
+Expliques lo necesario para entender decisiones de diseño técnico.
+Evites grafismos o efectos innecesarios: prioriza rendimiento y claridad.
+TONO Y ESTILO
+Evitar nombres tipo “Supreme War Ultimate Generals”.
+Buscar estética minimalista, elegante, sobria.
+Priorizar accesibilidad y rendimiento.
+PRIMERA TAREA
+Antes de generar código, el primer paso que quiero es que resumas la arquitectura técnica propuesta, los módulos del juego y las dependencias sugeridas. Después avanza paso a paso.

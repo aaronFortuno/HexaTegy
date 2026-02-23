@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tail:*)",
+      "Bash(which npm:*)",
+      "Bash(./node_modules/.bin/tsc:*)"
+    ]
+  }
+}

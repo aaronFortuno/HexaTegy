@@ -1,0 +1,11 @@
+{
+  "name": "hexategy",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev:server": "cd server && bun run relay.ts",
+    "dev:client": "cd client && bun run dev",
+    "build": "cd client && bun run build"
+  }
+}

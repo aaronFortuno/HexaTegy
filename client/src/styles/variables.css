@@ -1,0 +1,90 @@
+/**
+ * Design tokens — HexaTegy
+ * Mode fosc per defecte, mode clar via [data-theme="light"]
+ */
+
+:root {
+  /* ─── Tipografia ─────────────────────────────────────────────────────── */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+
+  --text-xs:   0.6875rem;  /* 11px */
+  --text-sm:   0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;  /* 15px */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.5rem;     /* 24px */
+  --text-2xl:  2rem;       /* 32px */
+
+  /* ─── Radis ──────────────────────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  14px;
+  --radius-full: 9999px;
+
+  /* ─── Espai ──────────────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ─── Transicions ────────────────────────────────────────────────────── */
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+}
+
+/* ─── Tema fosc (per defecte) ─────────────────────────────────────────────── */
+[data-theme="dark"], :root {
+  --bg:           #111318;
+  --bg-surface:   #1c1f27;
+  --bg-elevated:  #252931;
+  --bg-hover:     #2e3340;
+
+  --border:       rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 255, 255, 0.25);
+
+  --text-primary:   #e8eaf0;
+  --text-secondary: #8c92a4;
+  --text-muted:     #565c70;
+
+  --accent:         #6a8fff;
+  --accent-hover:   #859fff;
+  --accent-muted:   rgba(106, 143, 255, 0.15);
+
+  --danger:         #e05c5c;
+  --success:        #5ce07a;
+  --warning:        #e0c45c;
+
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Tema clar ───────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:           #f4f5f7;
+  --bg-surface:   #ffffff;
+  --bg-elevated:  #eef0f4;
+  --bg-hover:     #e4e7ed;
+
+  --border:       rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(0, 0, 0, 0.3);
+
+  --text-primary:   #1a1d26;
+  --text-secondary: #5a5f72;
+  --text-muted:     #9096aa;
+
+  --accent:         #3a67e8;
+  --accent-hover:   #2a57d8;
+  --accent-muted:   rgba(58, 103, 232, 0.1);
+
+  --danger:         #d94040;
+  --success:        #30a84e;
+  --warning:        #c4920a;
+
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.16);
+}

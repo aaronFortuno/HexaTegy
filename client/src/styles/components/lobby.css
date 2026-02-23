@@ -1,0 +1,175 @@
+/* ─── Lobby ───────────────────────────────────────────────────────────────── */
+
+.lobby-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-8);
+}
+
+.lobby-logo {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+/* ─── Selector de mode (local / en xarxa) ────────────────────────────────── */
+
+.lobby-mode-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  width: 100%;
+  max-width: 320px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: var(--space-2) 0;
+  border: none;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.mode-btn + .mode-btn {
+  border-left: 1px solid var(--border);
+}
+
+.mode-btn.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.lobby-mode-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+.lobby-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 320px;
+}
+
+.lobby-actions .btn {
+  width: 100%;
+}
+
+.lobby-divider {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.lobby-divider::before,
+.lobby-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: var(--border);
+}
+
+.lobby-divider::before { left: 0; }
+.lobby-divider::after  { right: 0; }
+
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.join-form .input {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}
+
+.join-form .input:last-of-type {
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--font-sans);
+}
+
+.lobby-error {
+  color: var(--danger);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* ─── Panell de configuració ─────────────────────────────────────────────── */
+
+.config-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.config-panel summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  list-style: none;
+  padding: var(--space-1) 0;
+}
+
+.config-panel summary::-webkit-details-marker { display: none; }
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.config-field input,
+.config-field select {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.config-field input:focus,
+.config-field select:focus {
+  border-color: var(--border-focus);
+}
+
+.config-save {
+  width: 100%;
+  margin-top: var(--space-2);
+}

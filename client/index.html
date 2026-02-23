@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ca" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HexaTegy</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>" />
+    <link rel="stylesheet" href="/src/styles/variables.css" />
+    <link rel="stylesheet" href="/src/styles/main.css" />
+    <link rel="stylesheet" href="/src/styles/components/lobby.css" />
+    <link rel="stylesheet" href="/src/styles/components/hud.css" />
+    <link rel="stylesheet" href="/src/styles/components/version-history.css" />
+  </head>
+  <body>
+    <!-- Capçalera discreta: nom del joc + historial de versions + tema -->
+    <header id="app-header"></header>
+
+    <!-- Vista activa (lobby / game / end-screen) -->
+    <main id="app-root"></main>
+
+    <!-- Modal historial de versions -->
+    <div id="version-history-modal" class="modal" hidden></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
