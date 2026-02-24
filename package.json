@@ -2,10 +2,22 @@
   "name": "hexategy",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["server", "client"],
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
     "dev:server": "cd server && bun run relay.ts",
     "dev:client": "cd client && bun run dev",
     "build": "cd client && bun run build"
-  }
+  },
+  "description": "Joc d'estratègia territorial per torns simultanis en temps real, jugat íntegrament al navegador.",
+  "main": "index.js",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

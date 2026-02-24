@@ -1,0 +1,15 @@
+{
+  "name": "hexategy-relay",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "bun run relay.ts",
+    "dev": "bun --watch relay.ts"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.13"
+  }
+}

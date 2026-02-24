@@ -1,0 +1,173 @@
+/* ─── HUD in-game ─────────────────────────────────────────────────────────── */
+
+.hud-top {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-5);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hud-round {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hud-phase {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hud-phase[data-phase="planning"]  { color: var(--success); }
+.hud-phase[data-phase="resolving"] { color: var(--warning); }
+.hud-phase[data-phase="ended"]     { color: var(--text-muted); }
+
+.hud-timer {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* ─── Puntuació lateral ───────────────────────────────────────────────────── */
+
+.hud-score {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.score-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.score-name {
+  color: var(--text-secondary);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  margin-left: auto;
+  padding-left: var(--space-2);
+}
+
+/* ─── Controls de zoom ────────────────────────────────────────────────────── */
+
+.zoom-controls {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zoom-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  user-select: none;
+}
+
+.zoom-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ─── Fi de partida ───────────────────────────────────────────────────────── */
+
+.end-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-4);
+  min-height: 100%;
+}
+
+.end-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.end-winner-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.end-winner-name {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.end-ranking {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  min-width: 280px;
+}
+
+.end-ranking th,
+.end-ranking td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.end-ranking th {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.end-ranking tr.eliminated td {
+  opacity: 0.4;
+}
+
+.end-actions {
+  display: flex;
+  gap: var(--space-3);
+}
