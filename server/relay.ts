@@ -18,7 +18,10 @@ interface RoomMember {
 // rooms: roomCode → llista de membres
 const rooms = new Map<string, RoomMember[]>();
 
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({ 
+  port: PORT,
+  host: "0.0.0.0" // per connectar amb servei extern i escolti totes les interfícies
+});
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 9);
