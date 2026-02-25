@@ -15,6 +15,24 @@ interface VersionEntry {
 /** Afegir aquí cada nova versió en ordre descendent */
 const HISTORY: VersionEntry[] = [
   {
+    version: "0.1.9",
+    date: "2026-02-25",
+    changes: [
+      "Correcció: l'editor de tropes de les fletxes s'obre en passar el cursor per sobre de l'etiqueta numèrica (cursor en forma de punter) i fent clic; la detecció anterior era massa discreta",
+      "Nova configuració: 'Mida del tauler' (radi 3–8), que controla el nombre de cel·les del grid hexagonal",
+      "Nova configuració: 'Forma del tauler' (interfície preparada; únicament Hexàgon disponible, Rectangle i Triangle pendents d'implementació)",
+    ],
+  },
+  {
+    version: "0.1.8",
+    date: "2026-02-25",
+    changes: [
+      "L'administrador apareix a la llista de jugadors de la sala d'espera i pot editar el seu propi nom com qualsevol altre jugador",
+      "Les etiquetes numèriques de les fletxes de planificació són editables: clic sobre el número per modificar les tropes assignades a aquell moviment",
+      "Feedback visual (vora vermella) quan el valor introduït supera el màxim disponible o és menor que 1",
+    ],
+  },
+  {
     version: "0.1.7",
     date: "2026-02-25",
     changes: [

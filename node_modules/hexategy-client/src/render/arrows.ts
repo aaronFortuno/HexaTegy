@@ -9,6 +9,8 @@ import { Region } from "../network/protocol.js";
 import { Camera } from "./camera.js";
 import { hexToPixel } from "./hex-renderer.js";
 
+const HEX_SIZE = 48; // radi exterior en píxels (sense zoom)
+
 export interface ArrowData {
   fromRegionId: string;
   toRegionId: string;
@@ -254,20 +256,31 @@ function drawArrowLine(
 ): void {
   const angle = Math.atan2(y2 - y1, x2 - x1);
   const headLen = 12;
-  const endX = x2 - Math.cos(angle) * 14;
-  const endY = y2 - Math.sin(angle) * 14;
+  const margin = HEX_SIZE / 3;
+
+  // Calcular els punts ajustats amb un marge de 1/3 del radi de l'hexàgon
+  const startX = x1 + margin * Math.cos(angle);
+  const startY = y1 + margin * Math.sin(angle);
+
+  // El punt final de la línia s'ajusta pel marge i per deixar un petit espai d'encavalcament amb el cap
+  const endX = x2 - margin * Math.cos(angle) - Math.cos(angle) * 5;
+  const endY = y2 - margin * Math.sin(angle) - Math.sin(angle) * 5;
 
   ctx.beginPath();
-  ctx.moveTo(x1, y1);
+  ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);
   ctx.stroke();
 
   // Cap de fletxa
   ctx.setLineDash([]);
   ctx.beginPath();
-  ctx.moveTo(x2, y2);
-  ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+  // La punta de la fletxa se situa exactament al límit del marge de l'hexàgon destí
+  const arrowTipX = x2 - margin * Math.cos(angle);
+  const arrowTipY = y2 - margin * Math.sin(angle);
+
+  ctx.moveTo(arrowTipX, arrowTipY);
+  ctx.lineTo(arrowTipX - headLen * Math.cos(angle - Math.PI / 6), arrowTipY - headLen * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(arrowTipX - headLen * Math.cos(angle + Math.PI / 6), arrowTipY - headLen * Math.sin(angle + Math.PI / 6));
   ctx.closePath();
   ctx.fill();
 }

@@ -36,6 +36,20 @@ export class AdminHost {
   constructor(relay: AnyRelay) {
     this.relay = relay;
     this.setupListeners();
+
+    // Pre-afegir l'admin a la llista de jugadors perquè aparegui a la sala
+    // d'espera i pugui editar el seu nom com qualsevol altre jugador.
+    const adminColor = AdminHost.PLAYER_COLORS[this.colorIndex % AdminHost.PLAYER_COLORS.length];
+    this.colorIndex++;
+    this.players.set(this.relay.clientId!, {
+      id: this.relay.clientId!,
+      name: "Admin",
+      color: adminColor,
+      isAdmin: true,
+      isReady: true,
+      isEliminated: false,
+    });
+    this.broadcastState();
   }
 
   private setupListeners(): void {
@@ -98,20 +112,14 @@ export class AdminHost {
   startGame(): void {
     if (this.phase !== "lobby") return;
 
+    // L'admin ja és a this.players des del constructor. Assegurem flags de partida.
+    const adminEntry = this.players.get(this.relay.clientId!);
+    if (adminEntry) {
+      adminEntry.isAdmin = true;
+      adminEntry.isReady = true;
+    }
+
     const playerIds = [...this.players.keys()];
-
-    // L'admin s'afegeix com a jugador
-    const adminPlayer: PlayerInfo = {
-      id: this.relay.clientId!,
-      name: "Admin",
-      color: AdminHost.PLAYER_COLORS[this.colorIndex % AdminHost.PLAYER_COLORS.length],
-      isAdmin: true,
-      isReady: true,
-      isEliminated: false,
-    };
-    this.players.set(adminPlayer.id, adminPlayer);
-    playerIds.unshift(adminPlayer.id);
-
     this.regions = generateMap(playerIds, this.config);
     this.startRound();
   }

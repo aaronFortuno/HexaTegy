@@ -3,7 +3,7 @@
  */
 
 import { t } from "../i18n/index.js";
-import { GameConfig, DEFAULT_CONFIG, VictoryCondition } from "../network/protocol.js";
+import { GameConfig, DEFAULT_CONFIG, VictoryCondition, MapShape } from "../network/protocol.js";
 
 export class ConfigPanel {
   private container: HTMLElement;
@@ -34,6 +34,8 @@ export class ConfigPanel {
           ${this.placementSelect()}
           ${this.field("number", "startRegions", t("config.start_regions"), 1, 5)}
           ${this.visibilitySelect()}
+          ${this.mapSizeSelect()}
+          ${this.mapShapeSelect()}
         </div>
       </details>
     `;
@@ -101,6 +103,42 @@ export class ConfigPanel {
         <span>${t("config.visibility_mode")}</span>
         <select data-key="visibilityMode">
           ${options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private mapSizeSelect(): string {
+    const sizes: Array<[number, string]> = [
+      [3, "3 – Petit (37 cel·les)"],
+      [4, "4 – Mig (61 cel·les)"],
+      [5, "5 – Estàndard (91 cel·les)"],
+      [6, "6 – Gran (127 cel·les)"],
+      [8, "8 – Molt gran (217 cel·les)"],
+    ];
+    return `
+      <label class="config-field">
+        <span>${t("config.map_size")}</span>
+        <select data-key="mapSize">
+          ${sizes.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  private mapShapeSelect(): string {
+    const shapes: Array<[MapShape, string, boolean]> = [
+      ["hexagon",   t("config.map_shape_hexagon"),   false],
+      ["rectangle", t("config.map_shape_rectangle"), true],
+      ["triangle",  t("config.map_shape_triangle"),  true],
+    ];
+    return `
+      <label class="config-field">
+        <span>${t("config.map_shape")}</span>
+        <select data-key="mapShape">
+          ${shapes.map(([v, l, dis]) =>
+            `<option value="${v}"${dis ? " disabled" : ""}>${l}</option>`
+          ).join("")}
         </select>
       </label>
     `;

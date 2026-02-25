@@ -46,6 +46,11 @@ export const en = {
   "config.visibility_full":        "Full visibility",
   "config.visibility_fog_of_war":  "Fog of war",
   "config.visibility_fog_strict":  "Strict fog",
+  "config.map_size":               "Board size",
+  "config.map_shape":              "Board shape",
+  "config.map_shape_hexagon":      "Hexagon",
+  "config.map_shape_rectangle":    "Rectangle (soon…)",
+  "config.map_shape_triangle":     "Triangle (soon…)",
 
   "phase.lobby": "Lobby",
   "phase.planning": "Planning",

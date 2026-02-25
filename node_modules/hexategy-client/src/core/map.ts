@@ -34,7 +34,8 @@ function coordKey(c: HexCoord): string {
  * Genera un mapa hexagonal de radi `radius` i assigna regions inicials
  * als jugadors indicats.
  */
-export function generateMap(playerIds: string[], config: GameConfig, radius = 5): Region[] {
+export function generateMap(playerIds: string[], config: GameConfig): Region[] {
+  const radius = Math.max(3, Math.min(8, config.mapSize ?? 5));
   const cells = generateHexGrid(radius);
   const coordMap = new Map(cells.map((c) => [coordKey(c), c]));
 

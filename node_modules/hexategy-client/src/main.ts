@@ -26,7 +26,7 @@ type AnyRelay = LocalRelay | RelayClient;
 // ─── Configuració ─────────────────────────────────────────────────────────────
 
 const RELAY_URL = (import.meta as unknown as { env: Record<string, string> })
-  .env?.VITE_RELAY_URL ?? "ws://localhost:3001";
+  .env?.VITE_RELAY_URL ?? "ws://192.168.17.117:3001" // "ws://localhost:3001"; //
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ function showWaitingRoom(
           isMe      ? `<span class="player-badge player-badge--me">tu</span>` : "",
           p.isReady ? `<span class="player-badge player-badge--ready">${t("lobby.ready")}</span>` : "",
         ].join("");
-        const editBtn = isAdmin && !isMe
+        const editBtn = isAdmin
           ? `<button class="btn-icon-sm btn-edit-name" data-id="${p.id}" title="${t("waiting.edit_name")}">✎</button>`
           : "";
         const kickBtn = isAdmin && !isMe
@@ -219,7 +219,15 @@ function showWaitingRoom(
       ? t("waiting.max_rounds_unlimited")
       : String(config.maxRounds);
 
+    const shapeLabel: Record<string, string> = {
+      hexagon:   t("config.map_shape_hexagon"),
+      rectangle: t("config.map_shape_rectangle"),
+      triangle:  t("config.map_shape_triangle"),
+    };
+
     const rows: Array<[string, string]> = [
+      [t("config.map_size"),                 String(config.mapSize ?? 5)],
+      [t("config.map_shape"),                shapeLabel[config.mapShape ?? "hexagon"] ?? (config.mapShape ?? "hexagon")],
       [t("config.visibility_mode"),          visLabel[config.visibilityMode]  ?? config.visibilityMode],
       [t("config.victory_condition"),        `${victLabel[config.victoryCondition] ?? config.victoryCondition} (${config.victoryParam})`],
       [t("config.round_duration"),           `${config.roundDuration}s`],
@@ -421,6 +429,10 @@ function showGame(
     showRegionContextMenu(region, cx, cy);
   });
 
+  inputHandler.onArrowLabelClick((fromId, toId, screenPos) => {
+    showArrowTroopInput(fromId, toId, screenPos);
+  });
+
   function showRegionContextMenu(region: Region, clientX: number, clientY: number): void {
     document.getElementById("region-ctx-menu")?.remove();
 
@@ -458,6 +470,65 @@ function showGame(
       }
     };
     setTimeout(() => document.addEventListener("mousedown", dismiss), 0);
+  }
+
+  function showArrowTroopInput(
+    fromId: string,
+    toId: string,
+    screenPos: { x: number; y: number }
+  ): void {
+    document.getElementById("arrow-troop-input")?.remove();
+
+    const order = localOrders.find((o) => o.fromRegionId === fromId && o.toRegionId === toId);
+    if (!order) return;
+    const fromRegion = game.regions.find((r) => r.id === fromId);
+    if (!fromRegion) return;
+
+    const otherTroops = localOrders
+      .filter((o) => o.fromRegionId === fromId && o.toRegionId !== toId)
+      .reduce((s, o) => s + o.troops, 0);
+    const maxTroops = Math.max(1, fromRegion.troops - 1 - otherTroops);
+
+    const inp = document.createElement("input");
+    inp.id        = "arrow-troop-input";
+    inp.type      = "number";
+    inp.className = "arrow-troop-input";
+    inp.value     = String(order.troops);
+    inp.min       = "1";
+    inp.max       = String(maxTroops);
+    inp.style.left = `${screenPos.x}px`;
+    inp.style.top  = `${screenPos.y}px`;
+
+    document.body.appendChild(inp);
+    inp.focus();
+    inp.select();
+
+    const validate = (): boolean => {
+      const v = parseInt(inp.value, 10);
+      const ok = !isNaN(v) && v >= 1 && v <= maxTroops;
+      inp.classList.toggle("arrow-troop-input--invalid", !ok);
+      return ok;
+    };
+
+    const commit = (): void => {
+      if (validate()) {
+        order.troops = parseInt(inp.value, 10);
+        game.localOrders = localOrders;
+        inputHandler.updateState(game.regions, localOrders);
+        renderFrame();
+      }
+      inp.remove();
+    };
+
+    inp.addEventListener("input", () => validate());
+    inp.addEventListener("blur", commit);
+    inp.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter")  { inp.blur(); }
+      if (ev.key === "Escape") {
+        inp.removeEventListener("blur", commit);
+        inp.remove();
+      }
+    });
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────

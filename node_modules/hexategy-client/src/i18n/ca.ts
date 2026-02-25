@@ -49,6 +49,11 @@ export const ca = {
   "config.visibility_full":        "Visibilitat total",
   "config.visibility_fog_of_war":  "Boira de guerra",
   "config.visibility_fog_strict":  "Boira estricta",
+  "config.map_size":               "Mida del tauler",
+  "config.map_shape":              "Forma del tauler",
+  "config.map_shape_hexagon":      "Hexàgon",
+  "config.map_shape_rectangle":    "Rectangle (aviat…)",
+  "config.map_shape_triangle":     "Triangle (aviat…)",
 
   // Fases de joc
   "phase.lobby": "Sala d'espera",

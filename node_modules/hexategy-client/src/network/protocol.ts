@@ -73,6 +73,8 @@ export interface GameConfig {
   startPlacement: "random" | "clustered";
   startRegions: number;        // regions inicials per jugador (1–5)
   visibilityMode: VisibilityMode;
+  mapSize: number;             // radi del grid hexagonal (3–8), default 5
+  mapShape: MapShape;          // forma del tauler (ara únicament "hexagon")
 }
 
 export type VictoryCondition =
@@ -85,6 +87,11 @@ export type VisibilityMode =
   | "full"        // Tots els jugadors veuen tot el tauler en temps real
   | "fog_of_war"  // Veus totes les regions amb propietari, però les tropes enemigues estan ocultes
   | "fog_strict"; // Boira estricta: únicament les teves regions i les adjacents directes
+
+export type MapShape =
+  | "hexagon"    // Hexàgon regular (implementat)
+  | "rectangle"  // Requadre (reservat per a versions futures)
+  | "triangle";  // Triangle (reservat per a versions futures)
 
 export interface MoveOrder {
   fromRegionId: string;
@@ -135,4 +142,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   startPlacement: "random",
   startRegions: 1,
   visibilityMode: "full",
+  mapSize: 5,
+  mapShape: "hexagon",
 };

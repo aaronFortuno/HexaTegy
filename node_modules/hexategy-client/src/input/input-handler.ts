@@ -5,6 +5,7 @@
  * Botó dret en regió pròpia + arrossegar a regió amb ordre → eliminar aquell ordre.
  * Botó dret (mousedown + mouseup a la mateixa casella) → menú contextual de la regió.
  * Botó central → desplaçament de càmera (gestionat per Camera).
+ * Clic sobre l'etiqueta numèrica d'una fletxa → editar tropes (cursor "pointer" de feedback).
  */
 
 import { Region, MoveOrder } from "../network/protocol.js";
@@ -33,10 +34,15 @@ export class InputHandler {
   private rightDragFrom: Region | null = null;    // origen del drag dret (regió pròpia)
   private rightDownRegion: Region | null = null;  // regió on s'ha premut el botó dret
 
+  // ─── Hover sobre etiqueta de fletxa (per a clic i cursor) ─────────────────
+  /** Ordre la etiqueta de la qual es troba sota el cursor. Null si no n'hi ha cap. */
+  private hoveredArrowLabel: MoveOrder | null = null;
+
   private onOrderChange: OrderChangeCallback;
   private onDragFrame: ((from: { x: number; y: number }, to: { x: number; y: number }) => void) | null = null;
   private onRightDragFrame: ((from: { x: number; y: number } | null, to: { x: number; y: number } | null, targetRegionId: string | null) => void) | null = null;
   private onContextMenuCb: ContextMenuCallback | null = null;
+  private onArrowLabelClickCb: ((fromId: string, toId: string, screenPos: { x: number; y: number }) => void) | null = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -57,6 +63,11 @@ export class InputHandler {
   updateState(regions: Region[], orders: MoveOrder[]): void {
     this.regions = regions;
     this.orders = orders;
+    // Si les ordres canvien (p. ex. al inici de ronda), netejar el hover
+    if (orders.length === 0) {
+      this.hoveredArrowLabel = null;
+      this.canvas.style.cursor = "";
+    }
   }
 
   /** Callback cridat en cada frame de drag esquerre (per dibuixar la fletxa de cursor). */
@@ -72,6 +83,11 @@ export class InputHandler {
   /** Callback cridat quan l'usuari fa clic dret sobre una regió (mateixa casella). */
   onContextMenu(cb: ContextMenuCallback): void {
     this.onContextMenuCb = cb;
+  }
+
+  /** Callback cridat quan l'usuari fa clic sobre l'etiqueta numèrica d'una fletxa planificada. */
+  onArrowLabelClick(cb: (fromId: string, toId: string, screenPos: { x: number; y: number }) => void): void {
+    this.onArrowLabelClickCb = cb;
   }
 
   private attachEvents(): void {
@@ -98,6 +114,20 @@ export class InputHandler {
 
   private onMouseDown = (e: MouseEvent): void => {
     if (e.button === 0) {
+      // Si el cursor és sobre l'etiqueta d'una fletxa planificada, obrir l'editor
+      if (this.hoveredArrowLabel && this.onArrowLabelClickCb) {
+        // preventDefault evita que el navegador gestioni el focus per defecte
+        // (en clicar un canvas no enfocable, alguns navegadors roten el focus
+        // i provoquen un blur immediat a l'input que acabem de crear).
+        e.preventDefault();
+        this.onArrowLabelClickCb(
+          this.hoveredArrowLabel.fromRegionId,
+          this.hoveredArrowLabel.toRegionId,
+          { x: e.clientX, y: e.clientY }
+        );
+        return;
+      }
+
       // Botó esquerre: inici de drag per planificar ordre
       const pos = this.canvasPos(e);
       const region = this.hexRenderer.regionAt(pos.x, pos.y, this.regions);
@@ -142,6 +172,14 @@ export class InputHandler {
         && this.rightDragFrom.neighbors.includes(hovered.id)
         && this.orders.some((o) => o.fromRegionId === this.rightDragFrom!.id && o.toRegionId === hovered.id);
       this.onRightDragFrame?.(fp, world, isValidTarget ? hovered!.id : null);
+    }
+
+    // Actualitzar l'estat de hover sobre etiquetes de fletxes (per a cursor i clic).
+    // S'omet durant drags actius o si s'està paneant (botons mig/dret premuts).
+    if (!this.isDragging && !this.rightDragFrom && !(e.buttons & 6)) {
+      const world = this.camera.canvasToWorld(pos.x, pos.y);
+      this.hoveredArrowLabel = this.arrowLabelAt(world);
+      this.canvas.style.cursor = this.hoveredArrowLabel ? "pointer" : "";
     }
   };
 
@@ -264,6 +302,37 @@ export class InputHandler {
     }
 
     this.onOrderChange([...this.orders]);
+  }
+
+  /**
+   * Retorna l'ordre la etiqueta del qual es troba sota les coordenades del món indicades.
+   * Retorna null si el cursor no és sobre cap etiqueta.
+   *
+   * L'àrea de detecció és més gran que l'etiqueta visual per facilitar la interacció.
+   */
+  private arrowLabelAt(world: { x: number; y: number }): MoveOrder | null {
+    if (this.orders.length === 0) return null;
+    const regionById = new Map(this.regions.map((r) => [r.id, r]));
+
+    for (const order of this.orders) {
+      const from = regionById.get(order.fromRegionId);
+      const to   = regionById.get(order.toRegionId);
+      if (!from || !to) continue;
+
+      const fp = hexToPixel(from.coord.q, from.coord.r);
+      const tp = hexToPixel(to.coord.q,   to.coord.r);
+      const mx = (fp.x + tp.x) / 2;
+      const my = (fp.y + tp.y) / 2;
+
+      // Font 12px bold ≈ 8px/caràcter; padding de la caixa = 12; marge extra = 8
+      const halfW = (String(order.troops).length * 8 + 16) / 2 + 8;
+      const halfH = 14; // > bh/2 = 10, marge de tolerància generós
+
+      if (Math.abs(world.x - mx) <= halfW && Math.abs(world.y - my) <= halfH) {
+        return order;
+      }
+    }
+    return null;
   }
 
   private endDrag(): void {

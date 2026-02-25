@@ -46,6 +46,11 @@ export const es = {
   "config.visibility_full":        "Visibilidad total",
   "config.visibility_fog_of_war":  "Niebla de guerra",
   "config.visibility_fog_strict":  "Niebla estricta",
+  "config.map_size":               "Tamaño del tablero",
+  "config.map_shape":              "Forma del tablero",
+  "config.map_shape_hexagon":      "Hexágono",
+  "config.map_shape_rectangle":    "Rectángulo (próximamente…)",
+  "config.map_shape_triangle":     "Triángulo (próximamente…)",
 
   "phase.lobby": "Sala de espera",
   "phase.planning": "Planificación",
