@@ -1,0 +1,35 @@
+name: Build and Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: oven-sh/bun@v0.6.13
+        with:
+          bun-version: 'latest'
+
+      - name: Install dependencies
+        run: |
+          cd client
+          bun install
+
+      - name: Build frontend
+        run: |
+          cd client
+          bun run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./client/dist
