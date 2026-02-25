@@ -1,6 +1,6 @@
 # HexaTegy
 
-Joc d'estratègia territorial per torns simultanis en temps real, jugat íntegrament al navegador.
+Joc d'estratègia territorial per torns simultanis en temps real, jugat íntegrament al navegador, accessible [aquí](https://aaronfortuno.github.io/HexaTegy/).
 
 ---
 
