@@ -47,7 +47,6 @@ export const ca = {
   "config.visibility_mode":        "Mode de visibilitat",
   "config.visibility_full":        "Visibilitat total",
   "config.visibility_fog_of_war":  "Boira de guerra",
-  "config.visibility_controlled_only": "Regions controlades",
   "config.visibility_fog_strict":  "Boira estricta",
 
   // Fases de joc

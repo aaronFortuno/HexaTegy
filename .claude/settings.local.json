@@ -6,7 +6,8 @@
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(cd \"C:/Users/afortun8/Desktop/VIBE CODING/HexaTegy/client\" && bun run build 2>&1)",
       "Bash(cd \"C:/Users/afortun8/Desktop/VIBE CODING/HexaTegy/client\" && npx tsc --noEmit 2>&1)",
-      "Bash(cd \"/c/Users/afortun8/Desktop/VIBE CODING/HexaTegy/client\" && bun run build 2>&1)"
+      "Bash(cd \"/c/Users/afortun8/Desktop/VIBE CODING/HexaTegy/client\" && bun run build 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\afortun8\\\\Desktop\\\\VIBE CODING\\\\HexaTegy\\\\client\" && bun run build 2>&1)"
     ]
   }
 }

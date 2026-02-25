@@ -19,7 +19,7 @@ export class ConfigPanel {
 
   private render(): void {
     this.container.innerHTML = `
-      <details class="config-panel">
+      <details class="config-panel" open>
         <summary>${t("config.title")}</summary>
         <div class="config-grid">
           ${this.field("number", "roundDuration", t("config.round_duration"), 5, 30)}
@@ -34,7 +34,6 @@ export class ConfigPanel {
           ${this.placementSelect()}
           ${this.visibilitySelect()}
         </div>
-        <button class="btn btn-secondary config-save">${t("config.save")}</button>
       </details>
     `;
 
@@ -92,10 +91,9 @@ export class ConfigPanel {
 
   private visibilitySelect(): string {
     const options: Array<[string, string]> = [
-      ["full",            t("config.visibility_full")],
-      ["fog_of_war",      t("config.visibility_fog_of_war")],
-      ["controlled_only", t("config.visibility_controlled_only")],
-      ["fog_strict",      t("config.visibility_fog_strict")],
+      ["full",       t("config.visibility_full")],
+      ["fog_of_war", t("config.visibility_fog_of_war")],
+      ["fog_strict", t("config.visibility_fog_strict")],
     ];
     return `
       <label class="config-field">
@@ -116,19 +114,21 @@ export class ConfigPanel {
   }
 
   private bindEvents(): void {
-    this.container.querySelector(".config-save")!.addEventListener("click", () => {
-      const inputs = this.container.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-key]");
-      inputs.forEach((el) => {
+    const inputs = this.container.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[data-key]");
+    inputs.forEach((el) => {
+      el.addEventListener("change", () => {
         const key = el.getAttribute("data-key") as keyof GameConfig;
         const raw = el.value;
-        // Camps numèrics
         if (el.tagName === "INPUT" && (el as HTMLInputElement).type === "number") {
-          (this.config as unknown as Record<string, unknown>)[key] = parseFloat(raw);
+          const num = parseFloat(raw);
+          if (!isNaN(num)) {
+            (this.config as unknown as Record<string, unknown>)[key] = num;
+          }
         } else {
           (this.config as unknown as Record<string, unknown>)[key] = raw;
         }
+        this.onChange({ ...this.config });
       });
-      this.onChange({ ...this.config });
     });
   }
 

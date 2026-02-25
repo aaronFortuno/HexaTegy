@@ -243,13 +243,27 @@ export class InputHandler {
     this.onOrderChange([...this.orders]);
   }
 
-  /** Elimina l'ordre específic de `fromId` → `toId`. */
+  /** Elimina l'ordre específic de `fromId` → `toId` i redistribueix les tropes
+   *  alliberades equitativament entre els ordres restants del mateix origen. */
   private removeOrder(fromId: string, toId: string): void {
     const before = this.orders.length;
-    this.orders  = this.orders.filter(
+    this.orders = this.orders.filter(
       (o) => !(o.fromRegionId === fromId && o.toRegionId === toId)
     );
-    if (this.orders.length !== before) this.onOrderChange([...this.orders]);
+    if (this.orders.length === before) return; // no s'ha eliminat res
+
+    // Redistribuir tropes als ordres restants del mateix origen
+    const remaining = this.orders.filter((o) => o.fromRegionId === fromId);
+    if (remaining.length > 0) {
+      const fromRegion = this.regions.find((r) => r.id === fromId);
+      if (fromRegion) {
+        const available = Math.max(0, fromRegion.troops - 1);
+        const perOrder  = Math.floor(available / remaining.length);
+        for (const o of remaining) o.troops = perOrder;
+      }
+    }
+
+    this.onOrderChange([...this.orders]);
   }
 
   private endDrag(): void {

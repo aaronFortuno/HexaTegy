@@ -12,7 +12,18 @@ import { Region, GameConfig } from "../network/protocol.js";
 // Registre de rondes continues de control per regió
 const controlStreak = new Map<string, { ownerId: string; rounds: number }>();
 
-export function applyProduction(regions: Region[], config: GameConfig): void {
+/**
+ * Aplica la producció de tropes a totes les regions controlades.
+ *
+ * @param skipTroopRegions  IDs de regions recentment conquistades aquest torn:
+ *   s'actualitza el comptador de streak (per no perdre el compte) però NO
+ *   s'afegeixen tropes — el jugador no genera producció el torn de la conquesta.
+ */
+export function applyProduction(
+  regions: Region[],
+  config: GameConfig,
+  skipTroopRegions: Set<string> = new Set(),
+): void {
   for (const region of regions) {
     if (!region.ownerId) continue;
 
@@ -25,7 +36,7 @@ export function applyProduction(regions: Region[], config: GameConfig): void {
     });
     production += ownedNeighbors.length * config.productionPerNeighbor;
 
-    // Bonus per control continuat
+    // Actualitzar streak (sempre, fins i tot per regions acabades de conquistar)
     const streak = controlStreak.get(region.id);
     if (streak && streak.ownerId === region.ownerId) {
       streak.rounds++;
@@ -35,6 +46,9 @@ export function applyProduction(regions: Region[], config: GameConfig): void {
     } else {
       controlStreak.set(region.id, { ownerId: region.ownerId, rounds: 1 });
     }
+
+    // No afegir tropes si la regió ha canviat de propietari durant l'últim torn
+    if (skipTroopRegions.has(region.id)) continue;
 
     region.troops += production;
   }

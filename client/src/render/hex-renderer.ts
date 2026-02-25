@@ -69,6 +69,34 @@ export class HexRenderer {
   /** Configuració de joc: necessària per calcular la producció */
   config: GameConfig | null = null;
 
+  /** Mirall client-side del controlStreak de production.ts */
+  private ownerStreak = new Map<string, { ownerId: string; rounds: number }>();
+
+  /**
+   * Actualitza el comptador de rondes de control continu per cada regió.
+   * S'ha de cridar un cop per ronda nova, just quan arriba el ROUND_START,
+   * per sincronitzar-se amb applyProduction del servidor.
+   */
+  updateOwnerStreak(regions: Region[]): void {
+    for (const region of regions) {
+      if (!region.ownerId) {
+        this.ownerStreak.delete(region.id);
+        continue;
+      }
+      const streak = this.ownerStreak.get(region.id);
+      if (streak && streak.ownerId === region.ownerId) {
+        streak.rounds++;
+      } else {
+        this.ownerStreak.set(region.id, { ownerId: region.ownerId, rounds: 1 });
+      }
+    }
+  }
+
+  /** Reinicia el streak quan comença una nova partida */
+  resetOwnerStreak(): void {
+    this.ownerStreak.clear();
+  }
+
   constructor(canvas: HTMLCanvasElement, camera: Camera) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
@@ -144,7 +172,11 @@ export class HexRenderer {
 
     // Producció prevista (visible únicament per al jugador propietari)
     if (region.ownerId && region.ownerId === this.myPlayerId && this.config) {
-      const prod = calcProduction(region, allRegions, this.config);
+      const streakRounds = (() => {
+        const s = this.ownerStreak.get(region.id);
+        return s?.ownerId === region.ownerId ? s.rounds : 0;
+      })();
+      const prod = calcProduction(region, allRegions, this.config, streakRounds);
       // Ancla prop del vèrtex superior-esquerre (angle 240°), amb marge interior
       const lx = x - size * 0.44;
       const ly = y - size * 0.60;
@@ -177,15 +209,23 @@ export class HexRenderer {
 // ─── Càlcul de producció (client-side, sense streak de servidor) ──────────────
 
 /**
- * Producció garantitzada per a una regió: base + bonus per veïns del mateix jugador.
- * No inclou el bonus de streak (estat privat del servidor).
+ * Producció d'una regió: base + bonus per veïns + bonus de streak.
+ * streakRounds ha de ser el nombre de rondes consecutives de control
+ * (mirall de production.ts::controlStreak, actualitzat via updateOwnerStreak).
  */
-function calcProduction(region: Region, allRegions: Region[], config: GameConfig): number {
+function calcProduction(
+  region: Region,
+  allRegions: Region[],
+  config: GameConfig,
+  streakRounds: number,
+): number {
   const ownedNeighbors = region.neighbors.filter((nId) => {
     const neighbor = allRegions.find((r) => r.id === nId);
     return neighbor?.ownerId === region.ownerId;
   });
-  return config.baseProduction + ownedNeighbors.length * config.productionPerNeighbor;
+  const base = config.baseProduction + ownedNeighbors.length * config.productionPerNeighbor;
+  const bonus = streakRounds >= config.bonusAfterRounds ? config.bonusTroops : 0;
+  return base + bonus;
 }
 
 // ─── Utilitats de color ───────────────────────────────────────────────────────

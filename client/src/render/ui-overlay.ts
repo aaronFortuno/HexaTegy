@@ -17,6 +17,7 @@ export class UIOverlay {
   private zoomControls: HTMLElement;
 
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
+  private submitTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -77,20 +78,34 @@ export class UIOverlay {
     let remaining = seconds;
     this.timerEl.textContent = String(remaining);
 
+    // setInterval only drives the visual display; it must NOT cancel submitTimeout
     this.countdownInterval = setInterval(() => {
       remaining--;
-      this.timerEl.textContent = String(remaining);
+      this.timerEl.textContent = String(Math.max(0, remaining));
       if (remaining <= 0) {
-        this.stopCountdown();
-        onEnd?.();
+        clearInterval(this.countdownInterval!);
+        this.countdownInterval = null;
       }
     }, 1000);
+
+    // setTimeout fires the submission callback at a precise absolute time,
+    // avoiding the ~300 ms drift that accumulates over 20 setInterval ticks
+    if (onEnd) {
+      this.submitTimeout = setTimeout(() => {
+        this.submitTimeout = null;
+        onEnd();
+      }, seconds * 1000);
+    }
   }
 
   stopCountdown(): void {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
       this.countdownInterval = null;
+    }
+    if (this.submitTimeout) {
+      clearTimeout(this.submitTimeout);
+      this.submitTimeout = null;
     }
   }
 

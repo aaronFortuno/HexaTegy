@@ -59,11 +59,12 @@ export function generateMap(playerIds: string[], config: GameConfig, radius = 5)
       .map((n) => regionMap.get(coordKey(n))!.id);
   }
 
-  // Col·locar jugadors
+  // Col·locar jugadors (amb expansió si startRegions > 1)
+  const startRegions = Math.max(1, config.startRegions ?? 1);
   if (config.startPlacement === "random") {
-    placePlayersRandom(regions, playerIds);
+    placePlayersRandom(regions, playerIds, startRegions);
   } else {
-    placePlayersClustered(regions, playerIds);
+    placePlayersClustered(regions, playerIds, startRegions);
   }
 
   return regions;
@@ -89,6 +90,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// TODO: afegir `startRegions` a GameConfig per permetre que cada jugador
+// comenci amb N regions en comptes d'una sola. Cal modificar placePlayersRandom
+// i placePlayersClustered per assignar N regions adjacents per jugador,
+// i actualitzar el ConfigPanel i els fitxers i18n corresponents.
+
 function placePlayersRandom(regions: Region[], playerIds: string[]): void {
   const shuffled = shuffle(regions);
   for (let i = 0; i < playerIds.length && i < shuffled.length; i++) {
@@ -106,10 +112,4 @@ function placePlayersClustered(regions: Region[], playerIds: string[]): void {
   );
 
   const starts = shuffle(perimeter).slice(0, playerIds.length);
-  for (let i = 0; i < playerIds.length; i++) {
-    if (starts[i]) {
-      starts[i].ownerId = playerIds[i];
-      starts[i].troops = 3;
-    }
-  }
-}
+  for (let i = 0; i < player

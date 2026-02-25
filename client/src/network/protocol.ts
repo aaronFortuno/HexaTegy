@@ -71,6 +71,7 @@ export interface GameConfig {
   victoryCondition: VictoryCondition;
   victoryParam: number;        // % mapa, rondes, punts... segons condició
   startPlacement: "random" | "clustered";
+  startRegions: number;        // regions inicials per jugador (1–5)
   visibilityMode: VisibilityMode;
 }
 
@@ -81,10 +82,9 @@ export type VictoryCondition =
   | "hill_control";
 
 export type VisibilityMode =
-  | "full"            // Tots els jugadors veuen tot el tauler en temps real
-  | "fog_of_war"      // Només veus el teu territori i les cel·les veïnes immediates
-  | "controlled_only" // Veus totes les regions però no les tropes enemigues
-  | "fog_strict";     // Boira estricta: únicament les teves regions i adjacents directes
+  | "full"        // Tots els jugadors veuen tot el tauler en temps real
+  | "fog_of_war"  // Veus totes les regions amb propietari, però les tropes enemigues estan ocultes
+  | "fog_strict"; // Boira estricta: únicament les teves regions i les adjacents directes
 
 export interface MoveOrder {
   fromRegionId: string;
@@ -133,5 +133,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   victoryCondition: "total_conquest",
   victoryParam: 100,
   startPlacement: "random",
+  startRegions: 1,
   visibilityMode: "full",
 };

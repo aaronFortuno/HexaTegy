@@ -91,15 +91,23 @@ function showWaitingRoom(
         <span class="room-code-label">Sala</span>
         <strong class="room-code">${roomCode}</strong>
       </div>
-      <div id="config-panel-mount"></div>
-      <div id="config-preview" class="config-preview"></div>
-      <div id="player-list" class="player-list">
-        <p class="player-list-empty">${t("waiting.no_players")}</p>
+      <div class="waiting-room-cols">
+        <div class="waiting-room-left">
+          ${isAdmin
+            ? `<div id="config-panel-mount"></div>`
+            : `<div id="config-preview" class="config-preview"></div>`
+          }
+        </div>
+        <div class="waiting-room-right">
+          <div id="player-list" class="player-list">
+            <p class="player-list-empty">${t("waiting.no_players")}</p>
+          </div>
+          ${isAdmin
+            ? `<button class="btn btn-primary" id="btn-start" disabled>${t("lobby.start_game")}</button>`
+            : `<button class="btn btn-secondary" id="btn-ready">${t("lobby.ready")}</button>`
+          }
+        </div>
       </div>
-      ${isAdmin
-        ? `<button class="btn btn-primary" id="btn-start" disabled>${t("lobby.start_game")}</button>`
-        : `<button class="btn btn-secondary" id="btn-ready">${t("lobby.ready")}</button>`
-      }
     </section>
   `;
 
@@ -192,10 +200,9 @@ function showWaitingRoom(
     if (!el) return;
 
     const visLabel: Record<string, string> = {
-      full:            t("config.visibility_full"),
-      fog_of_war:      t("config.visibility_fog_of_war"),
-      controlled_only: t("config.visibility_controlled_only"),
-      fog_strict:      t("config.visibility_fog_strict"),
+      full:      t("config.visibility_full"),
+      fog_of_war: t("config.visibility_fog_of_war"),
+      fog_strict: t("config.visibility_fog_strict"),
     };
     const victLabel: Record<string, string> = {
       total_conquest: t("config.victory_total"),
@@ -268,6 +275,47 @@ function showWaitingRoom(
       showGame(relay, clientId, isAdmin, adminHost);
     }
   });
+}
+
+// ─── Filtre de visibilitat (boira de guerra) ──────────────────────────────────
+
+/**
+ * Retorna una còpia filtrada de les regions segons el mode de visibilitat del jugador.
+ *
+ * - full:       totes les regions amb totes les dades (sense canvis)
+ * - fog_of_war: totes les regions visibles (es veu qui les controla),
+ *               però les tropes enemigues estan ocultes (troops = 0)
+ * - fog_strict: només les pròpies regions i les adjacents directes;
+ *               la resta apareix com a neutral (ownerId = null, troops = 0)
+ */
+function applyVisibilityFilter(
+  regions: Region[],
+  myPlayerId: string,
+  config: GameConfig | null
+): Region[] {
+  const mode = config?.visibilityMode ?? "full";
+  if (mode === "full") return regions;
+
+  const myRegionIds = new Set(
+    regions.filter((r) => r.ownerId === myPlayerId).map((r) => r.id)
+  );
+
+  if (mode === "fog_of_war") {
+    // Totes les regions visibles, però tropes enemigues ocultes
+    return regions.map((r) =>
+      myRegionIds.has(r.id) ? r : { ...r, troops: 0 }
+    );
+  }
+
+  // fog_strict: pròpies + adjacents visibles; resta = neutral
+  const visibleIds = new Set<string>(myRegionIds);
+  for (const regionId of myRegionIds) {
+    const region = regions.find((r) => r.id === regionId);
+    region?.neighbors.forEach((nId) => visibleIds.add(nId));
+  }
+  return regions.map((r) =>
+    visibleIds.has(r.id) ? r : { ...r, ownerId: null, troops: 0 }
+  );
 }
 
 function showGame(
@@ -403,7 +451,8 @@ function showGame(
   // ─── Render ───────────────────────────────────────────────────────────────
 
   function renderFrame(): void {
-    hexRenderer.render(game.regions, game.players);
+    const visRegions = applyVisibilityFilter(game.regions, clientId, game.config);
+    hexRenderer.render(visRegions, game.players);
 
     const myPlayer = game.playerById(clientId);
     const plannedArrows: ArrowData[] = localOrders.map((o) => ({
@@ -438,6 +487,7 @@ function showGame(
     localOrders = [];
     animationArrows = [];
     game.localOrders = [];
+    hexRenderer.updateOwnerStreak(game.regions);
     inputHandler.updateState(game.regions, localOrders);
     overlay.startCountdown(duration, () => game.submitOrders());
     renderFrame();

@@ -121,12 +121,15 @@ export class AdminHost {
   // BroadcastChannel / WebSocket abans de cridar resolveRound().
   private static readonly RESOLVE_GRACE_MS = 1000;
 
-  private startRound(): void {
+  private startRound(skipProductionFor: Set<string> = new Set()): void {
     this.round++;
     this.phase = "planning";
     this.pendingOrders.clear();
 
-    applyProduction(this.regions, this.config);
+    // Les regions recentment conquistades (skipProductionFor) no reben
+    // producció el primer torn de control: el jugador no les ha tingut
+    // durant tota la fase de planificació anterior.
+    applyProduction(this.regions, this.config, skipProductionFor);
     this.broadcastState();
 
     this.relay.send(MsgType.ROUND_START, {
@@ -148,6 +151,9 @@ export class AdminHost {
       ([playerId, orders]) => orders.map((o) => ({ ...o, playerId }))
     );
 
+    // Capturar propietaris ABANS de la resolució per detectar canvis
+    const ownerBefore = new Map(this.regions.map((r) => [r.id, r.ownerId]));
+
     const result: RoundResult = resolveRound(this.regions, allOrders, this.config);
     result.round = this.round; // assignar número de ronda correcte
 
@@ -159,6 +165,14 @@ export class AdminHost {
         region.troops = delta.newTroops;
       }
     }
+
+    // Regions que han canviat de propietari (conquestes noves):
+    // no rebran producció al primer torn de control del nou propietari.
+    const newlyConquered = new Set(
+      this.regions
+        .filter((r) => r.ownerId !== null && r.ownerId !== ownerBefore.get(r.id))
+        .map((r) => r.id)
+    );
 
     // Marcar eliminats
     for (const playerId of result.eliminated) {
@@ -177,7 +191,7 @@ export class AdminHost {
     }
 
     // Pausa breu per animació i nova ronda
-    setTimeout(() => this.startRound(), 2500);
+    setTimeout(() => this.startRound(newlyConquered), 2500);
   }
 
   private broadcastState(): void {

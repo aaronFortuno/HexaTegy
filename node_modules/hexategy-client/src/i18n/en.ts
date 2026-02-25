@@ -44,7 +44,6 @@ export const en = {
   "config.visibility_mode":        "Visibility mode",
   "config.visibility_full":        "Full visibility",
   "config.visibility_fog_of_war":  "Fog of war",
-  "config.visibility_controlled_only": "Controlled regions",
   "config.visibility_fog_strict":  "Strict fog",
 
   "phase.lobby": "Lobby",

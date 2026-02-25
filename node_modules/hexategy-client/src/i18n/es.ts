@@ -44,7 +44,6 @@ export const es = {
   "config.visibility_mode":        "Modo de visibilidad",
   "config.visibility_full":        "Visibilidad total",
   "config.visibility_fog_of_war":  "Niebla de guerra",
-  "config.visibility_controlled_only": "Regiones controladas",
   "config.visibility_fog_strict":  "Niebla estricta",
 
   "phase.lobby": "Sala de espera",

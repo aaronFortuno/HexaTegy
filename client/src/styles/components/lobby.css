@@ -169,22 +169,78 @@
   border-color: var(--border-focus);
 }
 
-.config-save {
-  width: 100%;
-  margin-top: var(--space-2);
-}
-
 /* ─── Sala d'espera ──────────────────────────────────────────────────────── */
 
 .waiting-room {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-4);
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-4);
   width: 100%;
-  max-width: 480px;
+  max-width: 860px;
   margin: 0 auto;
+}
+
+/* Cos de dues columnes: esquerra = config, dreta = jugadors */
+.waiting-room-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  width: 100%;
+  align-items: start;
+}
+
+.waiting-room-left,
+.waiting-room-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ─── Vista previsualització de config (clients no-admin) ────────────────── */
+
+.config-preview {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.config-preview-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.config-preview-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.config-preview-grid dt {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.config-preview-grid dd {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive: columna única en pantalles estretes */
+@media (max-width: 600px) {
+  .waiting-room-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 .room-code-block {
