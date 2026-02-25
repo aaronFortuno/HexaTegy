@@ -36,6 +36,7 @@ export const en = {
   "config.start_placement": "Starting placement",
   "config.placement_random": "Random",
   "config.placement_clustered": "Clustered",
+  "config.start_regions": "Starting regions per player",
   "config.victory_total": "Total conquest",
   "config.victory_score": "Score by rounds",
   "config.victory_percent": "% of map",

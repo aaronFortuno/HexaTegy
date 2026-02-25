@@ -228,6 +228,7 @@ function showWaitingRoom(
       [t("config.bonus_after_rounds"),       `+${config.bonusTroops} ${t("waiting.from_round")} ${config.bonusAfterRounds}`],
       [t("config.defense_advantage"),        `${Math.round(config.defenseAdvantage * 100)}%`],
       [t("config.start_placement"),          placLabel[config.startPlacement] ?? config.startPlacement],
+      [t("config.start_regions"),            String(config.startRegions ?? 1)],
     ];
 
     el.innerHTML = `
@@ -283,10 +284,14 @@ function showWaitingRoom(
  * Retorna una còpia filtrada de les regions segons el mode de visibilitat del jugador.
  *
  * - full:       totes les regions amb totes les dades (sense canvis)
- * - fog_of_war: totes les regions visibles (es veu qui les controla),
- *               però les tropes enemigues estan ocultes (troops = 0)
- * - fog_strict: només les pròpies regions i les adjacents directes;
- *               la resta apareix com a neutral (ownerId = null, troops = 0)
+ * - fog_of_war: totes les regions visibles (es veu qui les controla i les tropes
+ *               de les regions adjacents directes); les regions no adjacents no
+ *               mostren tropes (troops = 0).
+ * - fog_strict: només les pròpies regions i les adjacents directes amb totes
+ *               les dades; la resta apareix com a neutral (ownerId = null, troops = 0).
+ *
+ * En ambdós modes de boira, les regions adjacents SEMPRES mostren les tropes
+ * actuals (no l'increment de producció, que el renderer ja oculta per regions alienes).
  */
 function applyVisibilityFilter(
   regions: Region[],
@@ -300,22 +305,29 @@ function applyVisibilityFilter(
     regions.filter((r) => r.ownerId === myPlayerId).map((r) => r.id)
   );
 
-  if (mode === "fog_of_war") {
-    // Totes les regions visibles, però tropes enemigues ocultes
-    return regions.map((r) =>
-      myRegionIds.has(r.id) ? r : { ...r, troops: 0 }
-    );
-  }
-
-  // fog_strict: pròpies + adjacents visibles; resta = neutral
-  const visibleIds = new Set<string>(myRegionIds);
+  // Calcular adjacents (regions veïnes a les pròpies però no pròpies)
+  const adjacentIds = new Set<string>();
   for (const regionId of myRegionIds) {
     const region = regions.find((r) => r.id === regionId);
-    region?.neighbors.forEach((nId) => visibleIds.add(nId));
+    region?.neighbors.forEach((nId) => {
+      if (!myRegionIds.has(nId)) adjacentIds.add(nId);
+    });
   }
-  return regions.map((r) =>
-    visibleIds.has(r.id) ? r : { ...r, ownerId: null, troops: 0 }
-  );
+
+  if (mode === "fog_of_war") {
+    // Totes les regions visibles; adjacents mostren tropes reals;
+    // les no adjacents amaguen les tropes (troops = 0)
+    return regions.map((r) => {
+      if (myRegionIds.has(r.id) || adjacentIds.has(r.id)) return r;
+      return { ...r, troops: 0 };
+    });
+  }
+
+  // fog_strict: pròpies + adjacents visibles amb dades reals; resta = neutral
+  return regions.map((r) => {
+    if (myRegionIds.has(r.id) || adjacentIds.has(r.id)) return r;
+    return { ...r, ownerId: null, troops: 0 };
+  });
 }
 
 function showGame(

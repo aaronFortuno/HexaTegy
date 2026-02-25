@@ -90,20 +90,16 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// TODO: afegir `startRegions` a GameConfig per permetre que cada jugador
-// comenci amb N regions en comptes d'una sola. Cal modificar placePlayersRandom
-// i placePlayersClustered per assignar N regions adjacents per jugador,
-// i actualitzar el ConfigPanel i els fitxers i18n corresponents.
-
-function placePlayersRandom(regions: Region[], playerIds: string[]): void {
+function placePlayersRandom(regions: Region[], playerIds: string[], startRegions: number): void {
   const shuffled = shuffle(regions);
   for (let i = 0; i < playerIds.length && i < shuffled.length; i++) {
     shuffled[i].ownerId = playerIds[i];
     shuffled[i].troops = 3;
   }
+  if (startRegions > 1) expandTerritories(regions, playerIds, startRegions - 1);
 }
 
-function placePlayersClustered(regions: Region[], playerIds: string[]): void {
+function placePlayersClustered(regions: Region[], playerIds: string[], startRegions: number): void {
   // Seleccionar punts de partida distribuïts equidistantment al perímetre
   const perimeter = regions.filter((r) =>
     hexDistance(r.coord, { q: 0, r: 0 }) >= Math.floor(Math.max(...regions.map((x) =>
@@ -112,4 +108,41 @@ function placePlayersClustered(regions: Region[], playerIds: string[]): void {
   );
 
   const starts = shuffle(perimeter).slice(0, playerIds.length);
-  for (let i = 0; i < player
+  for (let i = 0; i < playerIds.length; i++) {
+    if (starts[i]) {
+      starts[i].ownerId = playerIds[i];
+      starts[i].troops = 3;
+    }
+  }
+  if (startRegions > 1) expandTerritories(regions, playerIds, startRegions - 1);
+}
+
+/**
+ * Expandeix el territori inicial de cada jugador afegint `extraCount` regions
+ * adjacents per jugador, de manera alternada i aleatòria.
+ * En cas de conflicte (dos jugadors volen la mateixa regió), guanya
+ * qui la demana primer en l'ordre aleatori del torn.
+ */
+function expandTerritories(regions: Region[], playerIds: string[], extraCount: number): void {
+  const regionById = new Map(regions.map((r) => [r.id, r]));
+  for (let step = 0; step < extraCount; step++) {
+    for (const playerId of shuffle([...playerIds])) {
+      const candidates: Region[] = [];
+      const seen = new Set<string>();
+      for (const r of regions) {
+        if (r.ownerId !== playerId) continue;
+        for (const nId of r.neighbors) {
+          if (seen.has(nId)) continue;
+          seen.add(nId);
+          const n = regionById.get(nId);
+          if (n && !n.ownerId) candidates.push(n);
+        }
+      }
+      if (candidates.length > 0) {
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        pick.ownerId = playerId;
+        pick.troops = 3;
+      }
+    }
+  }
+}

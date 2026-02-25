@@ -15,6 +15,15 @@ interface VersionEntry {
 /** Afegir aquí cada nova versió en ordre descendent */
 const HISTORY: VersionEntry[] = [
   {
+    version: "0.1.7",
+    date: "2026-02-25",
+    changes: [
+      "Nova opció de configuració: 'Regions inicials per jugador' (1–5), vinculada al mode de col·locació inicial",
+      "La col·locació expandeix el territori de cada jugador de forma aleatòria i equitativa entre veïns lliures",
+      "Boira de guerra i Boira estricta: les regions adjacents directes ara mostren sempre el nombre de tropes actuals (sense increment de producció, que continua ocult per a regions alienes)",
+    ],
+  },
+  {
     version: "0.1.6",
     date: "2026-02-25",
     changes: [

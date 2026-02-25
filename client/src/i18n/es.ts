@@ -36,6 +36,7 @@ export const es = {
   "config.start_placement": "Colocación inicial",
   "config.placement_random": "Aleatoria",
   "config.placement_clustered": "Agrupada",
+  "config.start_regions": "Regiones iniciales por jugador",
   "config.victory_total": "Conquista total",
   "config.victory_score": "Puntuación por rondas",
   "config.victory_percent": "% del mapa",

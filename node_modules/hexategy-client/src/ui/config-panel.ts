@@ -32,6 +32,7 @@ export class ConfigPanel {
           ${this.victorySelect()}
           ${this.field("number", "victoryParam", t("config.victory_param"), 1, 100)}
           ${this.placementSelect()}
+          ${this.field("number", "startRegions", t("config.start_regions"), 1, 5)}
           ${this.visibilitySelect()}
         </div>
       </details>
