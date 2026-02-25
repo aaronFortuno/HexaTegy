@@ -25,8 +25,9 @@ type AnyRelay = LocalRelay | RelayClient;
 
 // ─── Configuració ─────────────────────────────────────────────────────────────
 
-const RELAY_URL = (import.meta as unknown as { env: Record<string, string> })
-  .env?.VITE_RELAY_URL ?? "ws://192.168.17.117:3001" // "ws://localhost:3001"; //
+const RELAY_URL = "wss://hexategy-relay.onrender.com";
+// const RELAY_URL = (import.meta as unknown as { env: Record<string, string> })
+  // .env?.VITE_RELAY_URL ?? "ws://192.168.17.117:3001" // "ws://localhost:3001"; //
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
